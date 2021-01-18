@@ -41,33 +41,33 @@ class StationListView(PermissionRequiredMixin, SingleTableView):
     ordering = ['ddate', 'num', 'id']
     table_class = StationTable
     template_name = 'station/station_list.html'
-    
+
 
 def detail_ship(request, ship_id):
     ship = get_object_or_404(Ship, pk=ship_id)
     return render(request, 'ship/detail_ship.html', {'ship': ship})
 
-@permission_required('ship.delete_ship', raise_exception=True)
+@permission_required('station.delete_ship', raise_exception=True)
 def ship_delete(request, pk):
     Ship.objects.filter(id=pk).delete()
     return redirect("/ship/list")
 
 class ShipCreateView(PermissionRequiredMixin,CreateView):
-    permission_required = 'ship.add_ship'
+    permission_required = 'station.add_ship'
     template_name = 'ship/ship_form.html'
     model = Ship
     fields = ('name', 'eng_name', 'code', 'descr', 'descr_st', 'descr_worm')
     success_url = "/ship/list"
 
 class ShipUpdateView(PermissionRequiredMixin, UpdateView):
-    permission_required = 'ship.change_ship'
+    permission_required = 'station.change_ship'
     template_name = 'ship/ship_form.html'
     model = Ship
     fields = ('name', 'eng_name', 'code', 'descr', 'descr_st', 'descr_worm')
     success_url = "/ship/list"
 
 class ShipListView(PermissionRequiredMixin, SingleTableView):
-    permission_required = 'ship.view_ship'
+    permission_required = 'station.view_ship'
     model = Ship
     paginate_by = 10
     ordering = ['name', 'id']
