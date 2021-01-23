@@ -4,8 +4,8 @@ from django.views.generic.list import ListView
 from django_tables2 import SingleTableView
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import permission_required
-from .tables import StationTable, ShipTable
-from .models import Station, Ship
+from .tables import StationTable, ShipTable, SpeciesTable
+from .models import Station, Ship, Species
 
 # Create your views here.
 def home(request):
@@ -42,11 +42,6 @@ class StationListView(PermissionRequiredMixin, SingleTableView):
     table_class = StationTable
     template_name = 'station/station_list.html'
 
-
-def detail_ship(request, ship_id):
-    ship = get_object_or_404(Ship, pk=ship_id)
-    return render(request, 'ship/detail_ship.html', {'ship': ship})
-
 @permission_required('station.delete_ship', raise_exception=True)
 def ship_delete(request, pk):
     Ship.objects.filter(id=pk).delete()
@@ -73,3 +68,32 @@ class ShipListView(PermissionRequiredMixin, SingleTableView):
     ordering = ['name', 'id']
     table_class = ShipTable
     template_name = 'ship/ship_list.html'
+    
+    
+@permission_required('station.delete_species', raise_exception=True)
+def species_delete(request, pk):
+    Species.objects.filter(id=pk).delete()
+    return redirect("/species/list")
+
+class SpeciesCreateView(PermissionRequiredMixin,CreateView):
+    permission_required = 'station.add_species'
+    template_name = 'species/species_form.html'
+    model = Species
+    fields = ('name', 'genus_name', 'species_name', 'author', 'family', 'remark')
+    success_url = "/species/list"
+
+class SpeciesUpdateView(PermissionRequiredMixin, UpdateView):
+    permission_required = 'station.change_species'
+    template_name = 'species/species_form.html'
+    model = Species
+    fields = ('name', 'genus_name', 'species_name', 'author', 'family', 'remark')
+    success_url = "/species/list"
+
+class SpeciesListView(PermissionRequiredMixin, SingleTableView):
+    permission_required = 'station.view_species'
+    model = Species
+    paginate_by = 10
+    ordering = ['name', 'family', 'id']
+    table_class = SpeciesTable
+    template_name = 'species/species_list.html'
+   

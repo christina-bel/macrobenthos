@@ -25,3 +25,16 @@ class Ship(models.Model):
         
     class Meta:
         db_table = "ship"
+        
+class Species(models.Model):
+    name = models.CharField('Название', max_length=255)
+    genus_name = models.CharField('Родовое название', max_length=255, blank=True, null=True)
+    species_name  = models.CharField('Видовое название', max_length=255, blank=True, null=True)
+    author = models.CharField('Автор', max_length=50, blank=True, null=True)
+    family = models.CharField('Семейство', max_length=255, blank=True, null=True)
+    remark = models.CharField('Примечание', max_length=150, blank=True, null=True)
+    def __str__(self):
+        return f"{self.name} {self.family} {self.remark}"
+        
+    class Meta:
+        db_table = "species"
