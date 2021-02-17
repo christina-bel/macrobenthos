@@ -21,5 +21,7 @@ urlpatterns = [
     path('station/', include('station.urls')),
     path('ship/', include('station.urls')),
     path('species/', include('station.urls')),
-    path('', include('station.urls'))
+    path('family/', include('station.urls')),
+    path('genus/', include('station.urls')),
+    path('', include('station.urls')),
 ]
