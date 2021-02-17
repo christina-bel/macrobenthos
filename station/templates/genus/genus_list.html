@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% load render_table from django_tables2 %}
+
+{% block content %}
+    <h4>Список родовых названий</h4>
+    {% render_table table %}
+    <a href="{% url 'genus_new' %}"><span class="fa fa-plus"></span>Добавить родовое название</a>
+
+{% endblock %}
+

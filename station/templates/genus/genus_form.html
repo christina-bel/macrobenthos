@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+  <form method="post">
+    {% csrf_token %}
+    {{ form|crispy }}
+  <button type="submit" class="btn btn-success">Сохранить родовое название</button>
+  </form>
+<script>
+$(document).ready(function() {
+   $('.select').select2({
+        placeholder: "Установить значение",
+        allowClear: true,
+        width: "100%",
+    });
+});
+</script>
+{% endblock %}
+
+

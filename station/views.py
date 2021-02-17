@@ -4,8 +4,9 @@ from django.views.generic.list import ListView
 from django_tables2 import SingleTableView
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import permission_required
-from .tables import StationTable, ShipTable, SpeciesTable
-from .models import Station, Ship, Species
+from .tables import StationTable, ShipTable, SpeciesTable, FamilyTable, GenusTable
+from .models import Station, Ship, Species, Family, Genus
+from .forms import SpeciesForm
 
 # Create your views here.
 def home(request):
@@ -74,19 +75,34 @@ class ShipListView(PermissionRequiredMixin, SingleTableView):
 def species_delete(request, pk):
     Species.objects.filter(id=pk).delete()
     return redirect("/species/list")
+    
+@permission_required('station.load_genus', raise_exception=True)
+def load_genus(request):
+    family_id = request.GET.get('family')
+    genus = Genus.objects.filter(family_name_id=family_id).order_by('name')
+    return render(request, 'genus/genus_options.html', {'genus': genus})
+    
+@permission_required('station.new_item', raise_exception=True)
+def new_item(request):
+    family = request.GET.get('family')
+    genus = request.GET.get('genus')
+    isNewFamily = request.GET.get('newFamily')
+    nameFamily = Family.objects.create(family=family) if (isNewFamily == 'true') else Family.objects.get(pk=family)
+    nameGenus = Genus.objects.create(name=genus, family_name=nameFamily)
+    return render(request, 'species/new_item_options.html', {'family': Family.objects.all(), 'selectedFamily': nameFamily.pk, 'genus': Genus.objects.all(), 'selectedGenus': nameGenus.pk})
 
 class SpeciesCreateView(PermissionRequiredMixin,CreateView):
     permission_required = 'station.add_species'
     template_name = 'species/species_form.html'
     model = Species
-    fields = ('name', 'genus_name', 'species_name', 'author', 'family', 'remark')
+    form_class = SpeciesForm
     success_url = "/species/list"
 
 class SpeciesUpdateView(PermissionRequiredMixin, UpdateView):
     permission_required = 'station.change_species'
     template_name = 'species/species_form.html'
     model = Species
-    fields = ('name', 'genus_name', 'species_name', 'author', 'family', 'remark')
+    form_class = SpeciesForm
     success_url = "/species/list"
 
 class SpeciesListView(PermissionRequiredMixin, SingleTableView):
@@ -96,4 +112,59 @@ class SpeciesListView(PermissionRequiredMixin, SingleTableView):
     ordering = ['name', 'family', 'id']
     table_class = SpeciesTable
     template_name = 'species/species_list.html'
+    
    
+@permission_required('station.delete_family', raise_exception=True)
+def family_delete(request, pk):
+    Family.objects.filter(id=pk).delete()
+    return redirect("/family/list")
+
+class FamilyCreateView(PermissionRequiredMixin,CreateView):
+    permission_required = 'station.add_family'
+    template_name = 'family/family_form.html'
+    model = Family
+    fields = ('family',)
+    success_url = "/family/list"
+
+class FamilyUpdateView(PermissionRequiredMixin, UpdateView):
+    permission_required = 'station.change_family'
+    template_name = 'family/family_form.html'
+    model = Family
+    fields = ('family',)
+    success_url = "/family/list"
+
+class FamilyListView(PermissionRequiredMixin, SingleTableView):
+    permission_required = 'station.view_family'
+    model = Family
+    paginate_by = 10
+    ordering = ['family']
+    table_class = FamilyTable
+    template_name = 'family/family_list.html'
+   
+
+@permission_required('station.delete_genus', raise_exception=True)
+def genus_delete(request, pk):
+    Genus.objects.filter(id=pk).delete()
+    return redirect("/genus/list")
+
+class GenusCreateView(PermissionRequiredMixin,CreateView):
+    permission_required = 'station.add_genus'
+    template_name = 'genus/genus_form.html'
+    model = Genus
+    fields = ('name', 'family_name')
+    success_url = "/genus/list"
+
+class GenusUpdateView(PermissionRequiredMixin, UpdateView):
+    permission_required = 'station.change_genus'
+    template_name = 'genus/genus_form.html'
+    model = Genus
+    fields = ('name', 'family_name')
+    success_url = "/genus/list"
+
+class GenusListView(PermissionRequiredMixin, SingleTableView):
+    permission_required = 'station.view_genus'
+    model = Genus
+    paginate_by = 10
+    ordering = ['name', 'family_name']
+    table_class = GenusTable
+    template_name = 'genus/genus_list.html'

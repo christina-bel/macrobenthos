@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% load render_table from django_tables2 %}
+
+{% block content %}
+    <h4>Список семейств</h4>
+    {% render_table table %}
+    <a href="{% url 'family_new' %}"><span class="fa fa-plus"></span>Добавить семейство</a>
+
+{% endblock %}
+

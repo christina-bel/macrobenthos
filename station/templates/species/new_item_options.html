@@ -1,0 +1,11 @@
+<option class='family' value="">---------</option>
+{% for f in family %}
+<option class='family' value="{{ f.pk }}" {% if f.pk == selectedFamily %}selected{% endif %}>{{ f.family }}</option>
+{% endfor %}
+
+<div></div>
+
+<option class='genus' value="">---------</option>
+{% for g in genus %}
+<option class='genus' value="{{ g.pk }}" {% if g.pk == selectedGenus %}selected{% endif %}>{{ g.name }}</option>
+{% endfor %}

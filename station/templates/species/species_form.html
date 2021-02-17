@@ -1,9 +1,115 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 {% block content %}
-  <form method="post">
+  <form method="post" id="speciesForm" data-genus-url="{% url 'ajax_load_genus' %}" data-new-url="{% url 'ajax_new_item' %}">
     {% csrf_token %}
     {{ form|crispy }}
     <button type="submit" class="btn btn-success">Сохранить вид</button>
   </form>
+
+
+  <script>
+ $(document).ready(function() {
+     
+     let isNewFamily = false; // добавлено ли новое семейство
+     let isNewGenus = false; // добавлено ли новое родовое название
+     
+    // выбор семейства
+    $('#id_family').select2({
+         placeholder: "Установить значение",
+         allowClear: true,
+         width: "100%",
+         tags: true,
+         createTag: function (tag) {
+             return { id: tag.term, text: tag.term, isNew: true };
+         }
+     }).on('select2:select', function (e) {
+         
+         // выбор родового названия разблокируется и очищается при выборе семейства
+         $("#id_genus_name").prop("disabled", false);
+         $('#id_genus_name').empty().trigger("change");
+         
+         isNewFamily = (e.params.data.isNew) ? true : false; // переменная указывает, является ли семейство новым
+             
+         // отображение родовых названий в соответсвии с указанным семейством
+         if (!isNewFamily) {
+             let url = $("#speciesForm").attr("data-genus-url");  // получение url `load_genus`
+             let familyId = $(this).val();  // ID выбранного семейства
+             return $.ajax({
+                 url: url,
+                 data: {'family': familyId},
+                 success: function (data) {
+                     $("#id_genus_name").html(data);  // замена родовых названий данными с сервера
+                 }
+             });
+         }
+      });
+     
+      // при отмене семейства выбор родового названия блокируется и очищается
+      $('#id_family').on('select2:unselect', function (e) {
+         isNewFamily = false;
+         $('#id_genus_name').empty().trigger("change");
+         $("#id_genus_name").prop("disabled", true);
+      });
+     
+     
+      // выбор родового названия (изначально заблокирован для выбора)
+      $('#id_genus_name').select2({
+          placeholder: "Установить значение",
+          allowClear: true,
+          width: "100%",
+          disabled: $('#id_family').val() === '' ? true : false,
+          tags: true,
+          createTag: function (tag) {
+              return { id: tag.term, text: tag.term, isNew: true };
+          }
+      }).on('select2:select', function (e) {
+          // задается переменная, отвечающая за новизну родовое название, в случае необходимости вызывается функция добавления новых объектов в бд
+          if (e.params.data.isNew) {
+              isNewGenus = true;
+              addNewItems();
+          }
+          else
+              isNewGenus = false;
+      });
+     
+     
+     // добавление новых объектов в бд
+     function addNewItems() {
+        let answer = confirm('Вы уверены, что хотите добавить новое Родовое название и/или Семейство в справочники?');
+        // если ответ да, данные загружаются в соотвествующие справочники
+        if (answer) {
+            let url = $("#speciesForm").attr("data-new-url");  // получение url `new_item`
+            let family = $('#id_family').val();  // указанное семейства
+            let genus = $('#id_genus_name').val();  // указанное родовое название
+            return $.ajax({
+                    url: url,
+                    data: {'family': family, 'newFamily': isNewFamily, 'genus': genus },
+                    success: function (data) {
+                        $("#id_family").html(data.split('<div></div>')[0]);
+                        $("#id_genus_name").html(data.split('<div></div>')[1]);
+                    }
+            });
+        } else {
+            // если ответ нет, то очищаем поле родового названия
+            $('#id_genus_name').val(null).trigger("change");
+            isNewGenus = false;
+        }
+        // если ответ нет и было указано новое семейство, то очищаем и поле семейства
+        if (!answer && isNewFamily) {
+            $('#id_family').val(null).trigger("change");
+            $("#id_genus_name").prop("disabled", true);
+            isNewFamily = false;
+        }
+     }
+     
+     // изменение родового и видового названия влияет на итоговое название
+     $("#id_species_name, #id_genus_name").on("input change paste keyup cut select", function() {
+         let species_name = $('#id_species_name').val();
+         // если родовое названиие не выбрано, передается пустая строка, иначе - выбранное значение с пробелом
+         let genus_name = $('#id_genus_name :selected').val() == '' ? '' : $('#id_genus_name :selected').text() + ' ';
+         $('#id_name').val(`${genus_name}${species_name}`);
+     });
+  });
+  </script>
 {% endblock %}
