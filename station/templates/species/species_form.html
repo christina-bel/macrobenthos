@@ -4,7 +4,7 @@
   <form method="post" id="speciesForm" data-genus-url="{% url 'ajax_load_genus' %}" data-new-url="{% url 'ajax_new_item' %}">
     {% csrf_token %}
     {{ form|crispy }}
-    <button type="submit" class="btn btn-success">Сохранить вид</button>
+    <button type="submit" class="btn btn-success">Сохранить вид {{ from }}</button>
   </form>
 
 

@@ -9,6 +9,7 @@ class SpeciesForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['family'].queryset = Family.objects.all().order_by('family')
         self.fields['genus_name'].queryset = Genus.objects.none() # передаем пустой набор родовых названий
     
         # для пост-запроса с созданием нового вида передаются родовые названия в соответствии с выбранным семейством

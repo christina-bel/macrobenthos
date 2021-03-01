@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('remark', models.CharField(blank=True, max_length=150, null=True, verbose_name='Примечание')),
             ],
             options={
-                'db_table': 'species',
+                'db_table': 'species'
             },
         ),
     ]

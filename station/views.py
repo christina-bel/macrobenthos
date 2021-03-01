@@ -7,6 +7,9 @@ from django.contrib.auth.decorators import permission_required
 from .tables import StationTable, ShipTable, SpeciesTable, FamilyTable, GenusTable
 from .models import Station, Ship, Species, Family, Genus
 from .forms import SpeciesForm
+from django.core.paginator import Paginator
+
+PAGINATE_BY = 10
 
 # Create your views here.
 def home(request):
@@ -38,7 +41,7 @@ class StationUpdateView(PermissionRequiredMixin, UpdateView):
 class StationListView(PermissionRequiredMixin, SingleTableView):
     permission_required = 'station.view_station'
     model = Station
-    paginate_by = 10
+    paginate_by = PAGINATE_BY
     ordering = ['ddate', 'num', 'id']
     table_class = StationTable
     template_name = 'station/station_list.html'
@@ -65,7 +68,7 @@ class ShipUpdateView(PermissionRequiredMixin, UpdateView):
 class ShipListView(PermissionRequiredMixin, SingleTableView):
     permission_required = 'station.view_ship'
     model = Ship
-    paginate_by = 10
+    paginate_by = PAGINATE_BY
     ordering = ['name', 'id']
     table_class = ShipTable
     template_name = 'ship/ship_list.html'
@@ -76,12 +79,13 @@ def species_delete(request, pk):
     Species.objects.filter(id=pk).delete()
     return redirect("/species/list")
     
-@permission_required('station.load_genus', raise_exception=True)
+
 def load_genus(request):
     family_id = request.GET.get('family')
     genus = Genus.objects.filter(family_name_id=family_id).order_by('name')
     return render(request, 'genus/genus_options.html', {'genus': genus})
-    
+  
+  
 @permission_required('station.new_item', raise_exception=True)
 def new_item(request):
     family = request.GET.get('family')
@@ -103,12 +107,20 @@ class SpeciesUpdateView(PermissionRequiredMixin, UpdateView):
     template_name = 'species/species_form.html'
     model = Species
     form_class = SpeciesForm
-    success_url = "/species/list"
+    
+    def get_success_url(self):
+        species = Species.objects.get(pk=self.object.pk)
+        paginator = Paginator(Species.objects.all(), PAGINATE_BY)
+        for pageNumber in range(1, paginator.num_pages + 1):
+            if (species in paginator.page(pageNumber).object_list):
+                return  f"/species/list/?page={pageNumber}"
+        return "/species/list"
+        
 
 class SpeciesListView(PermissionRequiredMixin, SingleTableView):
     permission_required = 'station.view_species'
     model = Species
-    paginate_by = 10
+    paginate_by = PAGINATE_BY
     ordering = ['name', 'family', 'id']
     table_class = SpeciesTable
     template_name = 'species/species_list.html'
@@ -136,7 +148,7 @@ class FamilyUpdateView(PermissionRequiredMixin, UpdateView):
 class FamilyListView(PermissionRequiredMixin, SingleTableView):
     permission_required = 'station.view_family'
     model = Family
-    paginate_by = 10
+    paginate_by = PAGINATE_BY
     ordering = ['family']
     table_class = FamilyTable
     template_name = 'family/family_list.html'
@@ -164,7 +176,7 @@ class GenusUpdateView(PermissionRequiredMixin, UpdateView):
 class GenusListView(PermissionRequiredMixin, SingleTableView):
     permission_required = 'station.view_genus'
     model = Genus
-    paginate_by = 10
+    paginate_by = PAGINATE_BY
     ordering = ['name', 'family_name']
     table_class = GenusTable
     template_name = 'genus/genus_list.html'
