@@ -23,5 +23,6 @@ urlpatterns = [
     path('species/', include('station.urls')),
     path('family/', include('station.urls')),
     path('genus/', include('station.urls')),
+    path('samples/', include('station.urls')),
     path('', include('station.urls')),
 ]
