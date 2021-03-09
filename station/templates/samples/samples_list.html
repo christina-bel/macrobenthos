@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% load render_table from django_tables2 %}
+
+{% block content %}
+    <h4>Список проб</h4>
+    {% render_table table %}
+    <a href="{% url 'samples_new' %}"><span class="fa fa-plus"></span>Добавить пробу</a>
+
+{% endblock %}
+

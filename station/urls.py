@@ -3,12 +3,11 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 
 from . import views
-from .views import StationCreateView, StationListView, StationUpdateView, ShipCreateView, ShipListView, ShipUpdateView, SpeciesCreateView, SpeciesListView, SpeciesUpdateView, FamilyCreateView, FamilyListView, FamilyUpdateView, GenusCreateView, GenusListView, GenusUpdateView
+from .views import StationCreateView, StationListView, StationUpdateView, ShipCreateView, ShipListView, ShipUpdateView, SpeciesCreateView, SpeciesListView, SpeciesUpdateView, FamilyCreateView, FamilyListView, FamilyUpdateView, GenusCreateView, GenusListView, GenusUpdateView, SamplesCreateView, SamplesListView, SamplesUpdateView
 
 urlpatterns = [
     path('home', views.home, name='home'),
     path('', views.home, name='home'),
-    path('station/<int:station_id>/', views.detail_station, name='detail_station'),
     path('station/new/', StationCreateView.as_view(), name='station_new'),
     path('station/<int:pk>/edit', StationUpdateView.as_view(), name='station_edit'),
     path('station/<int:pk>/delete', views.station_delete, name='station_delete'),
@@ -36,6 +35,10 @@ urlpatterns = [
     path('genus/<int:pk>/delete', views.genus_delete, name='genus_delete'),
     path('genus/list/', GenusListView.as_view(), name='genus-list'),
     
+    path('samples/new/', SamplesCreateView.as_view(), name='samples_new'),
+    path('samples/<int:pk>/edit', SamplesUpdateView.as_view(), name='samples_edit'),
+    path('samples/<int:pk>/delete', views.samples_delete, name='samples_delete'),
+    path('samples/list/', SamplesListView.as_view(), name='samples-list'),
 
     path('login/', auth_views.LoginView.as_view()),
     path('logout/', auth_views.LogoutView.as_view())

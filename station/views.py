@@ -4,8 +4,8 @@ from django.views.generic.list import ListView
 from django_tables2 import SingleTableView
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import permission_required
-from .tables import StationTable, ShipTable, SpeciesTable, FamilyTable, GenusTable
-from .models import Station, Ship, Species, Family, Genus
+from .tables import StationTable, ShipTable, SpeciesTable, FamilyTable, GenusTable, SamplesTable
+from .models import Station, Ship, Species, Family, Genus, Samples
 from .forms import SpeciesForm
 from django.core.paginator import Paginator
 
@@ -15,10 +15,6 @@ PAGINATE_BY = 10
 def home(request):
     return render(request, 'home.html')
 
-def detail_station(request, station_id):
-    station = get_object_or_404(Station, pk=station_id)
-    return render(request, 'station/detail_station.html', {'station': station})
-
 @permission_required('station.delete_station', raise_exception=True)
 def station_delete(request, pk):
     Station.objects.filter(id=pk).delete()
@@ -27,24 +23,67 @@ def station_delete(request, pk):
 class StationCreateView(PermissionRequiredMixin,CreateView):
     permission_required = 'station.add_station'
     model = Station
-    fields = ('descr', 'ddate', 'code', 'num')
+    fields = ('num', 'ship_code', 'cruise', 'latitude', 'longitude', 'ddate', 'sample', 'rem')
     template_name = 'station/station_form.html'
     success_url = "/station/list"
 
 class StationUpdateView(PermissionRequiredMixin, UpdateView):
     permission_required = 'station.change_station'
     model = Station
-    fields = ('descr', 'ddate', 'code', 'num')
+    fields = ('num', 'ship_code', 'cruise', 'latitude', 'longitude', 'ddate', 'sample', 'rem')
     template_name = 'station/station_form.html'
-    success_url = "/station/list"
+    
+    def get_success_url(self):
+        station = Station.objects.get(pk=self.object.pk)
+        paginator = Paginator(Station.objects.all(), PAGINATE_BY)
+        for pageNumber in range(1, paginator.num_pages + 1):
+            if (station in paginator.page(pageNumber).object_list):
+                return  f"/station/list/?page={pageNumber}"
+        return "/station/list"
 
 class StationListView(PermissionRequiredMixin, SingleTableView):
     permission_required = 'station.view_station'
     model = Station
     paginate_by = PAGINATE_BY
-    ordering = ['ddate', 'num', 'id']
+    ordering = ['num', 'ddate', 'id']
     table_class = StationTable
     template_name = 'station/station_list.html'
+    
+
+@permission_required('station.delete_samples', raise_exception=True)
+def samples_delete(request, pk):
+    Samples.objects.filter(id=pk).delete()
+    return redirect("/samples/list")
+
+class SamplesCreateView(PermissionRequiredMixin,CreateView):
+    permission_required = 'station.add_samples'
+    model = Samples
+    fields = ('sample_num', 'subsample_num', 'species', 'weight')
+    template_name = 'samples/samples_form.html'
+    success_url = "/samples/list"
+
+class SamplesUpdateView(PermissionRequiredMixin, UpdateView):
+    permission_required = 'station.change_samples'
+    model = Samples
+    fields = ('sample_num', 'subsample_num', 'species', 'weight')
+    template_name = 'samples/samples_form.html'
+    
+    def get_success_url(self):
+        sample = Samples.objects.get(pk=self.object.pk)
+        paginator = Paginator(Samples.objects.all(), PAGINATE_BY)
+        for pageNumber in range(1, paginator.num_pages + 1):
+            if (sample in paginator.page(pageNumber).object_list):
+                return  f"/samples/list/?page={pageNumber}"
+        return "/samples/list"
+
+class SamplesListView(PermissionRequiredMixin, SingleTableView):
+    permission_required = 'station.view_samples'
+    model = Samples
+    paginate_by = PAGINATE_BY
+    ordering = ['sample_num', 'subsample_num', 'id']
+    table_class = SamplesTable
+    template_name = 'samples/samples_list.html'
+
 
 @permission_required('station.delete_ship', raise_exception=True)
 def ship_delete(request, pk):
@@ -63,7 +102,15 @@ class ShipUpdateView(PermissionRequiredMixin, UpdateView):
     template_name = 'ship/ship_form.html'
     model = Ship
     fields = ('name', 'eng_name', 'code', 'descr', 'descr_st', 'descr_worm')
-    success_url = "/ship/list"
+    
+    def get_success_url(self):
+        ship = Ship.objects.get(pk=self.object.pk)
+        paginator = Paginator(Ship.objects.all(), PAGINATE_BY)
+        for pageNumber in range(1, paginator.num_pages + 1):
+            if (ship in paginator.page(pageNumber).object_list):
+                return  f"/ship/list/?page={pageNumber}"
+        return "/ship/list"
+    
 
 class ShipListView(PermissionRequiredMixin, SingleTableView):
     permission_required = 'station.view_ship'
@@ -143,7 +190,14 @@ class FamilyUpdateView(PermissionRequiredMixin, UpdateView):
     template_name = 'family/family_form.html'
     model = Family
     fields = ('family',)
-    success_url = "/family/list"
+    
+    def get_success_url(self):
+        family = Family.objects.get(pk=self.object.pk)
+        paginator = Paginator(Family.objects.all(), PAGINATE_BY)
+        for pageNumber in range(1, paginator.num_pages + 1):
+            if (family in paginator.page(pageNumber).object_list):
+                return  f"/family/list/?page={pageNumber}"
+        return "/family/list"
 
 class FamilyListView(PermissionRequiredMixin, SingleTableView):
     permission_required = 'station.view_family'
@@ -171,7 +225,14 @@ class GenusUpdateView(PermissionRequiredMixin, UpdateView):
     template_name = 'genus/genus_form.html'
     model = Genus
     fields = ('name', 'family_name')
-    success_url = "/genus/list"
+    
+    def get_success_url(self):
+        genus = Genus.objects.get(pk=self.object.pk)
+        paginator = Paginator(Genus.objects.all(), PAGINATE_BY)
+        for pageNumber in range(1, paginator.num_pages + 1):
+            if (genus in paginator.page(pageNumber).object_list):
+                return  f"/genus/list/?page={pageNumber}"
+        return "/genus/list"
 
 class GenusListView(PermissionRequiredMixin, SingleTableView):
     permission_required = 'station.view_genus'

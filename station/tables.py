@@ -1,5 +1,5 @@
 import django_tables2 as tables
-from .models import Station, Ship, Species, Family, Genus
+from .models import Station, Ship, Species, Family, Genus, Samples
 from django_tables2.utils import A
 
 class StationTable(tables.Table):
@@ -10,8 +10,17 @@ class StationTable(tables.Table):
     class Meta:
         model = Station
         template_name = "django_tables2/bootstrap4.html"
-        fields = ('descr', 'ddate', 'code', 'num')
+        fields = ('num', 'ship_code', 'cruise', 'latitude', 'longitude', 'ddate', 'sample', 'rem')
         
+class SamplesTable(tables.Table):
+    edit = tables.LinkColumn('samples_edit', verbose_name='', text='', args=[A('pk')], orderable=False,
+        attrs={'a': {"class": "fa fa-pencil"}})
+    delete = tables.LinkColumn('samples_delete', verbose_name='', text='', args=[A('pk')], orderable=False,
+        attrs={'a': {"class": "fa fa-trash", "onclick": "return confirm('Действительно удалить?')" }})
+    class Meta:
+        model = Samples
+        template_name = "django_tables2/bootstrap4.html"
+        fields = ('sample_num', 'subsample_num', 'species', 'weight')
 
 class ShipTable(tables.Table):
     edit = tables.LinkColumn('ship_edit', verbose_name='', text='', args=[A('pk')], orderable=False,
